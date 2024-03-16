@@ -11,10 +11,10 @@ class Client:
     and transfer dictionary and file to the server.
     """
     def __init__(self):
-        self.s = socket.socket()   # Create a socket object
-        self.host = socket.gethostname()  # Get local machine nam
-        self.port = 60000     # Reserve a port for your service
-        self.connected = False   # Connection to the server
+        self.s = socket.socket()             # Create a socket object
+        self.host = socket.gethostname()     # Get local machine nam
+        self.port = 60000                    # Reserve a port for your service
+        self.connected = False               # Connection to the server
         try:
             # Connect to the server
             self.s.connect((self.host, self.port))  
@@ -173,33 +173,33 @@ if __name__ == "__main__":
     file_content = False
     write_file = False
     print_message = False
-    client = Client()                         # Initialise the client object
-    if client.connected == True:              # Connection established
+    client = Client()                                        # Initialise the client object
+    if client.connected == True:                             # Connection established
         
-        dictionary_format = client.chooseDataType()   # Dictionary or text file
+        dictionary_format = client.chooseDataType()          # Dictionary or text file
 
         while (write_file == False and print_message == False):
-            write_file = client.chooseOutputFormat()      # Write in a file
-            print_message = client.printMessage()         # Print on the screen
+            write_file = client.chooseOutputFormat()          # Write in a file
+            print_message = client.printMessage()             # Print on the screen
 
             if write_file == False and print_message == False:
                 print("Please select at least one output option (write file or print message)....")
             
-        select_enc = client.chooseEncryption()        # Encryption
+        select_enc = client.chooseEncryption()                # Encryption
 
 
-        if dictionary_format == True:                 # Dictionary format will be sending
+        if dictionary_format == True:                         # Dictionary format will be sending
             print("Sending dictionary to server....")
             sending_dictionary = client.createDictionary(select_enc)
             client.sendData(sending_dictionary, write_file, print_message, dictionary_format, select_enc)
             client.printSelectedOptions(write_file, print_message)
 
 
-        elif dictionary_format == False:              # File will be sending
+        elif dictionary_format == False:                      # File will be sending
             filename = input("Please enter the filename: ")
             file_content = client.readFile(filename,select_enc)
         
-            if file_content != False:                 # file exists
+            if file_content != False:                         # File exists
                 client.sendData(file_content, write_file, print_message, dictionary_format, select_enc)
                 client.printSelectedOptions(write_file, print_message)
 
