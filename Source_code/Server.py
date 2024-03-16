@@ -11,16 +11,12 @@ class Server:
     This class represents a server that can receive data from the client.
     """
     def __init__(self, filename, dictionary_name):
-        """
-        Reserve a port, create a socket object, get local machine name,
-        bind to the port, and wait for the connection.
-        """
-        port = 60000
-        self.conn = False                     
-        self.s = socket.socket()
-        host = socket.gethostname()
-        self.s.bind((host, port))
-        self.s.listen(5)
+        port = 60000                            # Reserve a port for your service
+        self.conn = False                       
+        self.s = socket.socket()                # Create a socket object
+        host = socket.gethostname()             # Get local machine name
+        self.s.bind((host, port))               # Bind to the port
+        self.s.listen(5)                        # Now wait for client connection
         self.filename = filename
         self.dictionary_name = dictionary_name
 
@@ -93,29 +89,29 @@ class Server:
                 # Initialise fernet object with encryption 
                 fernet = Fernet(key)
 
-                if dictionary_format == True:  # If data is in dictionary format
+                if dictionary_format == True:                               # If data is in dictionary format
                     received_dictionary = message
 
                     if encryption == True:
                         print("Coded Dictionary:" , received_dictionary)
-                        received_dictionary = self.decDictionary(received_dictionary, fernet)   # Decoding dictionary
+                        received_dictionary = self.decDictionary(received_dictionary, fernet)    # Decoding dictionary
 
                     if print_message == True:
-                        self.printDictionary(received_dictionary)  # Print dictionary
-
+                        self.printDictionary(received_dictionary)            # Print dictionary
+ 
                     if write_file == True :
-                        self.writeDictionaryToFile(received_dictionary)   # Write dictionary content in a file
+                        self.writeDictionaryToFile(received_dictionary)      # Write dictionary content in a file
 
                 else:  # If the received data is not in dictionary format
-                    if encryption == True:  # Decrypt file content
+                    if encryption == True:                                   # Decrypt file content
                         print("Coded message: ", message)
                         message = fernet.decrypt(message).decode()
                         print("Decoded message: ", message)
  
-                    if print_message == True:    # Print file content
+                    if print_message == True:                                # Print file content
                         print("Message: ",  message)
 
-                    if write_file == True:     # Write file content into a file
+                    if write_file == True:                                   # Write file content in a file
                         self.writeMsgToFile(message)
 
                 print('Successfully received') 
@@ -133,5 +129,5 @@ class Server:
 if __name__ == "__main__":
     # Initialise the server  and defiine the files where we write the received data
     server = Server('received_file.txt', 'received_dict.txt')  
-    server.receiveData()   # Start listening for client connection and receiving data                                                 
-    server.closeConnection()   # Close connection
+    server.receiveData()                                     # Start listening for client connection and receiving data                                                 
+    server.closeConnection()                                 # Close connection
