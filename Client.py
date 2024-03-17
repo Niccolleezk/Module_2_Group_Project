@@ -5,128 +5,216 @@ import pickle
 import socket
 from cryptography.fernet import Fernet
 
-
-class Server:
+class Client:
     """
-    This class represents a server that can receive data from the client.
+    This class represents a client that can connect to the server
+    and transfer dictionary and file to the server.
     """
-    def __init__(self, filename, dictionary_name):
-        port = 60000                                # Reserve a port for your service.
-        self.conn = False                     
-        self.s = socket.socket()                    # Create a socket object
-        host = socket.gethostname()                 # Get local machine name
-        self.s.bind((host, port))                   # Bind to the port
-        self.s.listen(5)                            # Now wait for client connection.
-        self.filename = filename
-        self.dictionary_name = dictionary_name
+    def __init__(self):
+        self.s = socket.socket()                  # Create a socket object
+        self.host = socket.gethostname()          # Get local machine nam
+        self.port = 60000                         # Reserve a port for your service
+        self.connected = False                    # Connection to the server
+        try:
+            # Connect to the server
+            self.s.connect((self.host, self.port))  
+            self.connected = True
+        except ConnectionRefusedError:            # If client unable to connect to the server
+            print('Connection failed. Please make sure there is a server / running on Port: %d' % (self.port))
 
-        print ('Server listening....')
+        # Generate enryption key and create fernet object
+        self.key = Fernet.generate_key()  
+        self.fernet = Fernet(self.key)
 
-    def decDictionary(self, enc_dictionary, fernet):
-        """
-        Decode the encrypted dictionary that the server receives.
-        """
-        decDictionary = {}
-        for key, value in enc_dictionary.items():
-            dec_key = fernet.decrypt(key).decode()
-            dec_value = fernet.decrypt(value).decode()
-            decDictionary[dec_key] = dec_value
 
-        return decDictionary
+    def readFile(self, filename, encryption):
+        """
+        Open and read the file.
+        """
+        try:
+            f = open(filename, "r", encoding="utf-8")
+            file_content = f.read()
+            f.close()
 
-    def printDictionary(self, dec_dictionary):
-        """
-        Print the received dictionary.
-        """
-        print("Received dictionary content: ")
-        for key, value in dec_dictionary.items():
-            print("key: " , key, " " , "value: ", value)
+            if encryption == True:     
+                enc_message = self.fernet.encrypt(file_content.encode())   # Enrypt file content
+                return enc_message
+            return file_content
+        except FileNotFoundError:
+            print(f"Error: File '{filename}' not found.")
+        except IOError:
+            print("Error: An IOError occurred while performing file operation.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
-    def writeDictionaryToFile(self, dec_dictionary):
-        """
-        Write the dictionary into a file.
-        """
-        write_file = open(self.dictionary_name, 'w', encoding="utf-8")
-        count = 0
+        return False
 
-        for key, value in dec_dictionary.items():
-            count +=1
-            if count < len(dec_dictionary):
-                write_file.write(f"{key}: {value}, ")
+    def createDictionary(self,encryption):
+        """
+        Create a dictionary for sending.
+        """
+        dict_data = {}
+
+        entry = None
+        print("Please enter the dictionary in key value pairs (example: Name : John). To finish the data input, write Stop.")
+
+        while(entry != 'Stop'):
+            entry = input("Please add the (key : value) pair (or Stop): ")
+            
+            if entry != 'Stop':
+                entry = entry.split(':')
+                key = entry[0]
+                value = entry[1]
+                dict_data[key] = value
+        print(dict_data)
+
+        if encryption == True:
+            enc_dict = {}
+            # Encrypt each key : value pair in the dictionary
+            for key, value in dict_data.items():
+                value = str(value)
+                enc_key = self.fernet.encrypt(key.encode())
+                enc_value = self.fernet.encrypt(value.encode())
+                enc_dict[enc_key] = enc_value
+
+            return enc_dict
+
+        return dict_data
+    
+    def sendData(self, message, write_file, print_message, dictionary_format, encryption):
+        """
+        Create a dictionary with the configuration.
+        """
+        client_message = {
+            'key' : self.key,                               # Encryption key  
+            'message' : message,                            # Sending message (file content / dictionary)
+            'write_file' : write_file,                      # Either write in a file
+            'print_message' : print_message,                # Or print on the screen                    
+            'encryption' : encryption,                      # Is the message enrypted ot not
+            'dictionary_format' : dictionary_format         # Is the data in dictionary format or not
+        }
+
+        serialised_data = pickle.dumps(client_message)      # Serialise data
+        self.s.sendall(serialised_data)                     # Send data to the server
+        print('Done sending')
+
+    def chooseDataType(self):
+        """
+        The user can choose which data type to send (dictionary or file)
+        """
+        dictionary_format = None
+
+        while dictionary_format == None:
+            data_type = input("1.) Do you send a dictionary (command 1) or a text file (command 2): ")
+            if data_type == '1':  # DICTIONARY ENTR
+                dictionary_format = True
+            elif data_type == '2':
+                dictionary_format = False
             else:
-                write_file.write(f"{key}: {value}")
-        write_file.close()
+                print("Wrong command")
 
-        print("The received data has been written in the file:", self.dictionary_name )
+        return dictionary_format
 
-    def writeMsgToFile(self, dec_message):
+    def chooseOutputFormat(self):
         """
-        Write the received file content to a file.
+        The user can choose whether the server should write the content in a file.
         """
-        write_file =  open(self.filename, 'w', encoding="utf-8")
-        write_file.write(dec_message)
-        write_file.close()
+        write_file = None
+        while write_file == None:
+            write_file_answ = input("2.) Do you want to write the content to a file (True / False): ")
 
-        print("The received data has been written in the file:", self.filename )
-
-    def receiveData(self):
-        """
-        Establish connection and receive data from the client. 
-        """
-        listening = True
-        while listening:
-            self.conn, addr = self.s.accept()
-            print('Got connection from', addr)
-            data = self.conn.recv(4096)
-           
-            if not data:
-                listening = False
+            if write_file_answ == 'True':
+                write_file = True
+            elif write_file_answ == 'False':
+                write_file = False
             else:
-                # Deserialise data
-                data = pickle.loads(data)
-                key = data['key']
-                message = data['message']
-                write_file = data['write_file']
-                print_message = data['print_message']
-                encryption = data['encryption']
-                dictionary_format = data['dictionary_format']
-                # Initialise fernet object with encryption 
-                fernet = Fernet(key)
+                print("Wrong answer")
+
+        return write_file
  
-                if dictionary_format == True:                             # If data is in dictionary format
-                    received_dictionary = message
+    def printMessage(self):
+        """
+        The user can choose whether the server should print the content to the screen.
+        """
+        print_message = None
+        # Ask the user to input correct instruction
+        while print_message == None:
+            print_message_answ = input("3.) Do you want to print the content on the screen (True / False): ")
+            if print_message_answ == 'True':
+                print_message = True
+            elif print_message_answ == 'False':
+                print_message = False
+            else:
+                print("Wrong answer")
+        return print_message
+    
+    def printSelectedOptions(self,write_file, print_message):
+        """
+        Print the options that the user selected.
+        """
+        if write_file == True and print_message == True:
+            print("The content is written in a file and printed on the screen....")
+        elif write_file == True and print_message == False:
+            print("The content is written in a file....")
+        elif write_file == False and print_message == True:
+            print("The content is printed on the screen....")
+      
 
-                    if encryption == True:
-                        received_dictionary = self.decDictionary(received_dictionary, fernet)   # Decoding dictionary            
-
-                    if print_message == True:
-                        self.printDictionary(received_dictionary)         # Print dictionary
-
-                    if write_file == True :
-                        self.writeDictionaryToFile(received_dictionary)    # Write dictionary content in a file
-
-                else:  # If the received data is not in dictionary format
-                    if encryption == True:  # Decrypt file content
-                        message = fernet.decrypt(message).decode()
- 
-                    if print_message == True:                               # Print file content
-                        print("Received message:\n",  message)
-
-                    if write_file == True:                                  # Write file content into a file
-                        self.writeMsgToFile(message)
-
+    def chooseEncryption(self):
+        """
+        The user can choose to send encrypted content. 
+        """
+        select_enc = None
+        while select_enc == None:
+            select_enc_answ = input("4.) Do you want to encrypt the content (True / False): ")
+            if select_enc_answ == 'True':
+                select_enc = True
+            elif select_enc_answ == 'False':
+                select_enc = False
+            else:
+                print("Wrong answer")
+        return select_enc
 
     def closeConnection(self):
         """
         Close connection.
         """
-        print ("Connection closed.")
-        self.conn.close()
-
+        self.s.close()
+        print('Connection closed')
 
 
 if __name__ == "__main__":
-    # Initialise the server  and define the file where we write the received data
-    server = Server('received_file.txt', 'received_dict.txt')  
-    server.receiveData()                       # Start listening for client connection and receiving data                                                 
-    server.closeConnection()                   # Close connection
+    file_content = False
+    write_file = False
+    print_message = False
+    client = Client()                                        # Initialise the client object
+    if client.connected == True:                             # Connection established
+        
+        dictionary_format = client.chooseDataType()          # Dictionary or text file
+
+        while (write_file == False and print_message == False):
+            write_file = client.chooseOutputFormat()         # Write in a file
+            print_message = client.printMessage()            # Print on the screen
+
+            if write_file == False and print_message == False:
+                print("Please select at least one output option (write file or print message)....")
+            
+        select_enc = client.chooseEncryption()               # Encryption
+
+
+        if dictionary_format == True:                        # Dictionary format will be sent
+            sending_dictionary = client.createDictionary(select_enc)
+            client.sendData(sending_dictionary, write_file, print_message, dictionary_format, select_enc)
+            print("Sending dictionary to server....")
+            client.printSelectedOptions(write_file, print_message)
+
+
+        elif dictionary_format == False:                     # File will be sent
+            filename = input("Please enter the filename: ")
+            file_content = client.readFile(filename,select_enc)
+        
+            if file_content != False:                        # File exists
+                client.sendData(file_content, write_file, print_message, dictionary_format, select_enc)
+                client.printSelectedOptions(write_file, print_message)
+
+        client.closeConnection()
