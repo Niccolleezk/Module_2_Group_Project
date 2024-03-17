@@ -1,0 +1,17 @@
+1, John Smith, 35, male, Software Developer, IT
+2, Sarah Johnson, 28, female, Business Analyst, Marketing
+3, Michael Brown, 45, male, Project Manager, IT
+4, Emily Davis, 32, female, UI/UX Designer, Design
+5, David Lee, 38, male, Data Analyst, IT
+6, Julia Martin, 29, female, Marketing Manager, Marketing
+7, Adam Clark, 41, male, Sales Manager, Sales
+8, Laura Wilson, 27, female, Graphic Designer, Design
+9, Peter Harris, 36, male, Software Developer, IT
+10, Jessica Lee, 31, female, HR Manager, HR
+11, Mark Brown, 36, male, Technical Lead, IT
+12, Emma White, 26, female, Content Writer, Marketing
+13, Alex Johnson, 33, male, Database Administrator, IT
+14, Olivia Davis, 30, female, Content Writer, Marketing
+15, Mark Lewis, 35, male, Graphic Designer, Design
+16, Jane Perry, 28, female, Developer, IT
+17, Tim David, 35, male, Technical Lead, IT
