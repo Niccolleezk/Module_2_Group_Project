@@ -29,7 +29,7 @@ class TestDataTransfer(unittest.TestCase):
         self.assertTrue(os.path.exists(self.received_dict_name))
 
     
-    def test_DictFileContent(self):
+    def test_EncDictFileContent(self):
         """
         Test if the data sent by the client is identical
         with the data written in the file by the server.
@@ -54,7 +54,7 @@ class TestDataTransfer(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(TestDataTransfer('test_EncDictionarySending'))   # Add test case for dictionary sending
-    suite.addTest(TestDataTransfer('test_DictFileContent'))        # Add test case for dictionary file content
+    suite.addTest(TestDataTransfer('test_EncDictFileContent'))     # Add test case for dictionary file content
     result = unittest.TestResult()                                 # Create a test result object
     suite.run(result)                                              # Run the test suite
 
@@ -62,3 +62,4 @@ if __name__ == '__main__':
     print("Number of tests run:", result.testsRun)
     print("Number of failures:", len(result.failures))
     print("Number of errors:", len(result.errors))
+    
