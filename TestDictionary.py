@@ -63,3 +63,4 @@ if __name__ == '__main__':
     print("Number of tests run:", result.testsRun)
     print("Number of failures:", len(result.failures))
     print("Number of errors:", len(result.errors))
+    
