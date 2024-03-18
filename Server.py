@@ -57,6 +57,8 @@ class Server:
                 write_file.write(f"{key}: {value}")
         write_file.close()
 
+        print("The received data has been written in the file:", self.dictionary_name )
+
     def writeMsgToFile(self, dec_message):
         """
         Write the received file content to a file.
@@ -64,6 +66,8 @@ class Server:
         write_file =  open(self.filename, 'w', encoding="utf-8")
         write_file.write(dec_message)
         write_file.close()
+
+        print("The received data has been written in the file:", self.filename )
 
     def receiveData(self):
         """
@@ -93,8 +97,7 @@ class Server:
                     received_dictionary = message
 
                     if encryption == True:
-                        print("Coded Dictionary:" , received_dictionary)
-                        received_dictionary = self.decDictionary(received_dictionary, fernet)   # Decoding dictionary
+                        received_dictionary = self.decDictionary(received_dictionary, fernet)   # Decoding dictionary            
 
                     if print_message == True:
                         self.printDictionary(received_dictionary)         # Print dictionary
@@ -104,17 +107,13 @@ class Server:
 
                 else:  # If the received data is not in dictionary format
                     if encryption == True:  # Decrypt file content
-                        print("Coded message: ", message)
                         message = fernet.decrypt(message).decode()
-                        print("Decoded message: ", message)
  
                     if print_message == True:                               # Print file content
-                        print("Message: ",  message)
+                        print("Received message:\n",  message)
 
                     if write_file == True:                                  # Write file content into a file
                         self.writeMsgToFile(message)
-
-                print('Successfully received') 
 
 
     def closeConnection(self):
