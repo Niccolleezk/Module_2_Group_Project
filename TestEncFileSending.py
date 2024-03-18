@@ -31,7 +31,7 @@ class TestDataTransfer(unittest.TestCase):
             self.assertTrue(os.path.exists(self.received_filename))
 
 
-    def test_FileContent(self):
+    def test_EncFileContent(self):
         """
         Test if the data sent by the client is identical
         with the data written in the file by the server.
@@ -55,7 +55,7 @@ class TestDataTransfer(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(TestDataTransfer('test_EncFileSending'))            # Add test case for file sending
-    suite.addTest(TestDataTransfer('test_FileContent'))               # Add test case for file content
+    suite.addTest(TestDataTransfer('test_EncFileContent'))            # Add test case for file content
     result = unittest.TestResult()                                    # Create a test result object
     suite.run(result)                                                 # Run the test suite
 
@@ -63,3 +63,4 @@ if __name__ == '__main__':
     print("Number of tests run:", result.testsRun)
     print("Number of failures:", len(result.failures))
     print("Number of errors:", len(result.errors))
+    
